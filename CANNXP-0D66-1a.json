@@ -110,6 +110,30 @@
       "displayTitle": "20th route",
       "type" : "EventVariableNumber",
       "eventVariableIndex": 20
+    },
+    {
+      "displayTitle": "Button is entrance",
+      "type" : "EventVariableSelect",
+      "eventVariableIndex": 21,
+      "options": [
+        {
+          "value": 0,
+          "label": "Exit only"
+        },
+        {
+          "value": 1,
+          "label": "Entrance only"
+        },
+        {
+          "value": 2,
+          "label": "Entrance and Exit"
+        }
+      ]
+    },
+    {
+      "displayTitle": "Entrance button number",
+      "type" : "EventVariableNumber",
+      "eventVariableIndex": 22
     }
   ]
 }

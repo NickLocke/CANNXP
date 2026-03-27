@@ -1,14 +1,12 @@
 // Copyright (C) Nick Locke (nick.locke@21jubileepark.com)
-//  This file is part of CANNXP project on https://github.com/SvenRosvall/CANNX
-//  Licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
-//  The full licence can be found at: http://creativecommons.org/licenses/by-nc-sa/4.0
+// This file is part of CANNXP project on https://github.com/NickLocke/CANNXP
+// Licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
+// The full licence can be found at: http://creativecommons.org/licenses/by-nc-sa/4.0
 
-
-
-//  Copyright (C) Sven Rosvall (sven@rosvall.ie)
-//  This file is part of CANNX project on https://github.com/SvenRosvall/CANNX
-//  Licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
-//  The full licence can be found at: http://creativecommons.org/licenses/by-nc-sa/4.0
+// CANNXP is based on CANNX
+// Copyright (C) Sven Rosvall (sven@rosvall.ie)
+// This file is part of CANNX project on https://github.com/SvenRosvall/CANNX
+// Licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
 
 /*
       3rd party libraries needed for compilation: (not for binary-only distributions)
@@ -36,14 +34,17 @@ const byte VER_BETA = 0;            // code beta sub-version
 const byte MANUFACTURER = MANU_DEV; // for boards in development.
 const byte MODULE_ID = 102;          // VLCB module type
 
+// These setting assuming an Arduino Nano running on the CANGATE hardware from RME
 const byte LED_GRN = 4;             // VLCB green Unitialised LED pin
 const byte LED_YLW = 5;             // VLCB yellow Normal LED pin
 const byte SWITCH0 = 6;             // VLCB push button switch pin
 
 // module name, must be at most 7 characters.
-char mname[] = "NX";
+char mname[] = "NXP";
 
-const int NumEVs = 20;
+const int NumRouteEVs = 20;
+const int EntranceFlagEV = 21;
+const int EntranceButtonNumberEV = 22;
 
 VLCB::CAN2515 can2515;                  // CAN transport object
 
@@ -58,7 +59,7 @@ VLCB::EventTeachingService etService;
 VLCB::EventProducerService epService;
 
 long lastButtonPressTime = 0; // in ms.
-byte possibleRoutes[NumEVs];
+byte possibleRoutes[NumRouteEVs];
 
 //
 /// setup VLCB - runs once at power on from setup()
@@ -74,7 +75,7 @@ void setupVLCB()
   // set config layout parameters
   VLCB::setNumNodeVariables(10);
   VLCB::setMaxEvents(32);
-  VLCB::setNumEventVariables(NumEVs);
+  VLCB::setNumEventVariables(NumRouteEVs + 2);
 
   // set module parameters
   VLCB::setVersion(VER_MAJ, VER_MIN, VER_BETA);
@@ -157,7 +158,7 @@ void saveLastButtonPressTime()
 void saveRoutesFromEvent(byte eventIndex)
 {
   // Save routes for this event for next button press.
-  for (byte i = 0; i < NumEVs; i++)
+  for (byte i = 0; i < NumRouteEVs; i++)
   {
     possibleRoutes[i] = VLCB::getEventEVval(eventIndex, i + 1);
   }
@@ -165,7 +166,7 @@ void saveRoutesFromEvent(byte eventIndex)
 
 bool routeIsSaved(byte newRoute)
 {
-  for (byte j = 0; j < NumEVs; j++)
+  for (byte j = 0; j < NumRouteEVs; j++)
   {
     if (possibleRoutes[j] == newRoute)
     {
@@ -180,7 +181,7 @@ byte findMatchingRoute(byte eventIndex)
   // Match route set with previous route set. (Intersection)
   byte selectedRoute = 0;
   byte routeCount = 0;
-  for (byte i = 0; i < NumEVs; i++)
+  for (byte i = 0; i < NumRouteEVs; i++)
   {
     byte newRoute = VLCB::getEventEVval(eventIndex, i + 1);
     //Serial << F("> > checking route ") << newRoute << endl;
@@ -252,10 +253,26 @@ void eventhandler(byte eventIndex, const VLCB::VlcbMessage *msg)
 
   else
   {
-    // First button pressed
-    saveRoutesFromEvent(eventIndex);
-    Serial << F("> possible routes from entrance button saved.") << endl;
-    saveLastButtonPressTime();
+    // First button pressed, we only want to process it if it is an entrance (or combined) button
+    int buttonType = VLCB::getEventEVval(eventIndex, EntranceFlagEV);
+
+    if(buttonType > 0)
+    {
+
+      // Send an event with this node NN and the Entrance Button Number * 100 as EN. Cannot be taught.
+      // Intended to allow the entrance button light to be flashed.
+      int entranceButtonNumber = VLCB::getEventEVval(eventIndex, EntranceButtonNumberEV);
+      VLCB::sendMessageWithNN(OPC_ACON, 0, entranceButtonNumber * 100);
+
+      saveRoutesFromEvent(eventIndex);
+      Serial << F("> possible routes from entrance button saved.") << endl;
+      saveLastButtonPressTime();
+    }
+
+    else
+    {
+      Serial << F("> Not an entrance button - ignored") << endl; 
+    }
   }
   
 }
