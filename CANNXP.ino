@@ -1,3 +1,10 @@
+// Copyright (C) Nick Locke (nick.locke@21jubileepark.com)
+//  This file is part of CANNXP project on https://github.com/SvenRosvall/CANNX
+//  Licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
+//  The full licence can be found at: http://creativecommons.org/licenses/by-nc-sa/4.0
+
+
+
 //  Copyright (C) Sven Rosvall (sven@rosvall.ie)
 //  This file is part of CANNX project on https://github.com/SvenRosvall/CANNX
 //  Licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
@@ -27,11 +34,11 @@ const byte VER_MAJ = 1;             // code major version
 const char VER_MIN = 'a';           // code minor version
 const byte VER_BETA = 0;            // code beta sub-version
 const byte MANUFACTURER = MANU_DEV; // for boards in development.
-const byte MODULE_ID = 101;          // VLCB module type
+const byte MODULE_ID = 102;          // VLCB module type
 
 const byte LED_GRN = 4;             // VLCB green Unitialised LED pin
-const byte LED_YLW = 7;             // VLCB yellow Normal LED pin
-const byte SWITCH0 = 8;             // VLCB push button switch pin
+const byte LED_YLW = 5;             // VLCB yellow Normal LED pin
+const byte SWITCH0 = 6;             // VLCB push button switch pin
 
 // module name, must be at most 7 characters.
 char mname[] = "NX";
@@ -81,7 +88,7 @@ void setupVLCB()
 
   // configure and start CAN bus and VLCB message processing
   can2515.setNumBuffers(2, 2);      // more buffers = more memory used, fewer = less
-  can2515.setOscFreq(16000000UL);   // select the crystal frequency of the CAN module
+  can2515.setOscFreq(8000000UL);   // select the crystal frequency of the CAN module
   can2515.setPins(10, 2);           // select pins for CAN bus CE and interrupt connections
   if (!can2515.begin())
   {
@@ -234,11 +241,23 @@ void eventhandler(byte eventIndex, const VLCB::VlcbMessage *msg)
     {
       Serial << F("> No route selected.") << endl;
     }
+
+    Serial << F("> Processing of Exit button completed.") << endl;
   }
 
-  saveRoutesFromEvent(eventIndex);
-  Serial << F("> saved routes from event for future button press.") << endl;
-  saveLastButtonPressTime();
+  // Don't want to save this here because A-B-C is not a valid button press, the signalman has to go A-B-B-C.
+  //saveRoutesFromEvent(eventIndex);
+  //Serial << F("> saved routes from event for future button press.") << endl;
+  //saveLastButtonPressTime();
+
+  else
+  {
+    // First button pressed
+    saveRoutesFromEvent(eventIndex);
+    Serial << F("> possible routes from entrance button saved.") << endl;
+    saveLastButtonPressTime();
+  }
+  
 }
 
 //
