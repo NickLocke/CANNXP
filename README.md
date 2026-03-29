@@ -26,7 +26,7 @@ Then all of the possible routes are identified and numbered. This example shows 
 
 ![Route numbering](Images/Routes.png)
 
-This is significantly more complicated than the arrangement used in CANNX, but is intended to enhance the prototypica aspects of the route setting process. Specifically, it:
+This is significantly more complicated than the arrangement used in CANNX, but is intended to enhance the prototypical aspects of the route setting process. Specifically, it:
 
 - differentiates between entrance, exit and combined buttons.
 - does not assume that all routes are reversible.
