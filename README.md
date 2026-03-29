@@ -12,13 +12,34 @@ A route is set between an entrance button and an exit button. Each button can be
 
 Note that on larger panels, there is the concept of a "flasher ring" which groups the entrance buttons so that multiple signalmen can set multiple routes simultaneously. That concept is nto supported here - only a single entrance button can be active at any one time.
 
+Due note has been taken of Sven's point about ensuring that a module only does one thing, and does it well. Accordingly, functionality which is part of the route "calling" process has been included here. However functionality beyond that such as route "setting" and "clearing" has not been included and will ultimately be handled elsewhere.
+
 ## Route design
 
 It is probably easiest to create a spreadsheet for clarity. 
 
-Each button whether entrance, exit or combined is given a unique number. Then each possible route (from an entrance to an exit) is also given a unique number. 
+Each button whether entrance, exit or combined is given a unique number. Then each possible route (from an entrance to an exit) is also given a unique number. This example shows the translation between actual signal numbers on the layout/panel and those numbers used within CANNXP.
 
-![alt text](Images/Buttons.png)
+![Button numbering](Images/Buttons.png)
+
+Then all of the possible routes are identified and numbered. This example shows the route number that has been allocated and then the layout/panel numbers and the corresponding numbers used within CANNXP.
+
+![Route numbering](Images/Routes.png)
+
+This is significantly more complicated than the arrangement used in CANNX, but is intended to enhance the prototypica aspects of the route setting process. Specifically, it:
+
+- differentiates between entrance, exit and combined buttons.
+- does not assume that all routes are reversible.
+- forces sequential routes to be set using for example buttons A-B-B-C (whilst A-B-C is appropriate for a model railway, it is not prototypical for a UK NX panel).
+
+The CANNXP produces certain events as part of its processing, with the event numbers being as follows:
+
+- ACON / Entrance Button Number * 100 - produced when a valid entrance button is pressed. Used to start the entrance button flashing.
+- ACON / Route Number - produced when a route from an entrance to an exit button has been called successfully. Used to start the route setting process.
+- ACON / Entrance Button Number * 200 - produced when a route from an entrance to an exit button has been called successfully. Used to light the entrance button steadily.
+- ACOF / Entrance Button Number * 100 - produced when an entrance button times out, or an invalid exit button is selected. Used to stop the entrance button flashing.
+
+The multiplication by100 and 200 is intended to ensure that there is no conflict between the event numbers. Consideration is being given to using Bob Vetterlein's suggestion of using the high byte to create the range of events. That would imply zero for the route number, then 1 and 2 for the buttons.
 
 ## Node Variables
 
@@ -52,55 +73,26 @@ be a valid exit for the entrance button defined in EV1. This restricts the maxim
 Only relevant when a valid exit button has been specified in the corresponding EV (EV3 through EV12). The unique number here is used to define 
 the route between the specified entrance and exit buttons.
 
+## Configuration using MMC
+
+A module definition file (MDF) has been created to aid configuration of the CANNXP using MMC. 
+
+### Node Variables
+
+The Node Variable configuration is unchanged from CANNX.
+
+![Node Variables](Images/Node Variables.png)
+
+### Event Variables
+
+For buttons which only support exit functionality no additional information is required, so a simple configuration screen is displayed.
+
+![Event Variables for exit only buttons](Images/Event Variables 1.png)
+
+For buttons which support entrance functionality, valid exit buttons and the resultant routes are required, so a more complex screen is displayed.
+
+![Event Variables for entrance and combined buttons](Images/Event Variables 2.png)
+
+The number of each applicable exit button and the corresponding route numnber should be added (again, a spreadhseet list is your friend).
 
 
-
-CANNXP makes the following changes:
-
-## Sequential routes
-The code no longer stores the potential subsequent routes when the second button in a sequence has been pressed. The original
-CANNX implementation allowed routes to be set using a short cut method such as A-B-C. Whilst that works very well for a model
-railway, it is not prototypical. On a real panel, the signalman would have to press A-B-B-C.
-
-## Entrance only buttons
-The original CANNX implementation assumes that all routes are bi-directional which is not necessarily the case on the prototype
-railway. To that end, some buttons are "entrance only", some are "exit only" and some are "combined". To get close to the 
-prototype, the CANNXP allows for buttons to be flagged as "entrance" and only those buttons will be recognised as the first 
-button of a pair. If an "exit only" button if pressed first, it will be ignored.
-
-## Entrance button illumination
-When blah blah
-
-
-
-
-
-## Event variables
-The first 20 are unchanged from CANNX and represent the route numbers of routes involved with the button that the event handles.
-
-### Button Type
-The 21st EV can be either 0, 1 or 2 meaning:
-
-- 0 - the button is used for route exits only
-- 1 - the button is used for route entrances only
-- 2 - the button can be used both as an entrance and an exit *** (further work is needed here to prevent the setting of backwards routes) ***
-
-### Button Number
-The 22nd EV holds the button number. This is not used internally by CANNXP. Rather, it is used to identify distinct buttons (as opposed to routes)
-in events produced by the CANNXP.
-
-## Produced events
-The CANNXP produces certain events at distinct points in its processing, designed to allow a hardware panel to act prototypically.
-
-### Entrance button pressed
-When an entrance button is pressed, the butoon light should flash. To allow this to happen, the CANNXP produces an ON event with its node number and
-an event number which is the pressed button number * 100.
-
-### Route call request
-This is the original event (called a route set event in CANNX) produced when the CANNXP recognises a valid combination of buttons, representing a route. An ON event with the node number and an event number equal to the route number is produced.
-
-### Entrance button steady
-When a route has been called successfully, the entrance button at the start of the route is illuminated continuously. To facililate this, the CANNXP produces an ON event with its node number and an event number which is the relevant entrance button number * 200.
-
-### Entrance button timeout
-???
