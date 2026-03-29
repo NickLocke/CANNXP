@@ -1,7 +1,7 @@
 # CANNXP
 CBUS module to compute eNtry/eXit routes with a little bit of prototypical OCD.
 
-Based on CANNX written by Sven Rosvall with, of course, acknoledgement of all his hard work.
+Based on CANNX written by Sven Rosvall with, of course, acknowledgement of all his hard work.
 
 See [description of CANNX](https://merg.org.uk/merg_wiki/doku.php?id=arduino:cannx)
 in the MERG Knowledgebase.
