@@ -93,6 +93,6 @@ For buttons which support entrance functionality, valid exit buttons and the res
 
 ![Event Variables for entrance and combined buttons](Images/Event Variables 2.png)
 
-The number of each applicable exit button and the corresponding route numnber should be added (again, a spreadhseet list is your friend).
+The number of each applicable exit button and the corresponding route numnber should be added (again, a spreadsheet list is your friend).
 
 
