@@ -81,17 +81,17 @@ A module definition file (MDF) has been created to aid configuration of the CANN
 
 The Node Variable configuration is unchanged from CANNX.
 
-![Node Variables](Images/Node Variables.png)
+![Node Variables](Images/NodeVariables.png)
 
 ### Event Variables
 
 For buttons which only support exit functionality no additional information is required, so a simple configuration screen is displayed.
 
-![Event Variables for exit only buttons](Images/Event Variables 1.png)
+![Event Variables for exit only buttons](Images/EventVariables1.png)
 
 For buttons which support entrance functionality, valid exit buttons and the resultant routes are required, so a more complex screen is displayed.
 
-![Event Variables for entrance and combined buttons](Images/Event Variables 2.png)
+![Event Variables for entrance and combined buttons](Images/EventVariables2.png)
 
 The number of each applicable exit button and the corresponding route numnber should be added (again, a spreadsheet list is your friend).
 
