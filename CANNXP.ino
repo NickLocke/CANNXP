@@ -8,20 +8,18 @@
 // This file is part of CANNX project on https://github.com/SvenRosvall/CANNX
 // Licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
 
-/*
-      3rd party libraries needed for compilation: (not for binary-only distributions)
+// 3rd party libraries needed for compilation: (not for binary-only distributions)
+// Streaming   -- C++ stream style output, v5, (http://arduiniana.org/libraries/streaming/)
+// VLCB        -- VLCB library for communicating on a CBUS network.
+// ACAN2515    -- library to support the MCP2515/25625 CAN controller IC
 
-      Streaming   -- C++ stream style output, v5, (http://arduiniana.org/libraries/streaming/)
-      VLCB        -- VLCB library for communicating on a CBUS network.
-      ACAN2515    -- library to support the MCP2515/25625 CAN controller IC
-*/
 
 // 3rd party libraries
 #include <Streaming.h>
 
 // VLCB library header files
 #include <VLCB.h>
-#include <CAN2515.h>               // Chosen CAN controller
+#include <CAN2515.h>    
 
 // forward function declarations
 void eventhandler(byte, const VLCB::VlcbMessage *);
@@ -32,9 +30,9 @@ const byte VER_MAJ = 1;             // code major version
 const char VER_MIN = 'a';           // code minor version
 const byte VER_BETA = 0;            // code beta sub-version
 const byte MANUFACTURER = MANU_DEV; // for boards in development.
-const byte MODULE_ID = 102;          // VLCB module type
+const byte MODULE_ID = 102;         // VLCB module type
 
-// These setting assuming an Arduino Nano running on the CANGATE hardware from RME
+// These settings assume an Arduino Nano running on the CANGATE hardware from RME
 const byte LED_GRN = 4;             // VLCB green Unitialised LED pin
 const byte LED_YLW = 5;             // VLCB yellow Normal LED pin
 const byte SWITCH0 = 6;             // VLCB push button switch pin
@@ -42,15 +40,8 @@ const byte SWITCH0 = 6;             // VLCB push button switch pin
 // module name, must be at most 7 characters.
 char mname[] = "NXP";
 
-// These variables hold details of the currently active entrance button if any. 
-int activeEntranceButtonNumber = 0;
-long timeEntranceButtonPressed;
-
-const int NumRouteEVs = 20;
-const int EntranceFlagEV = 21;
-const int EntranceButtonNumberEV = 22;
-
-VLCB::CAN2515 can2515;                  // CAN transport object
+// CAN transport object
+VLCB::CAN2515 can2515;                  
 
 // Service objects
 VLCB::LEDUserInterface ledUserInterface(LED_GRN, LED_YLW, SWITCH0);
@@ -62,62 +53,24 @@ VLCB::EventConsumerService ecService;
 VLCB::EventTeachingService etService;
 VLCB::EventProducerService epService;
 
-long lastButtonPressTime = 0; // in ms.
-byte possibleRoutes[NumRouteEVs];
+// Structure of the Event Variables
+const int ButtonNumberEV = 1;
+const int ButtonTypeEV = 2;              // 1 = Entrance, 2 = Entrance and Exit, 3 = Exit
+const int FirstExitButtonNumberEV = 3;
+const int FirstRouteNumberEV = 13;
+const int NumExitRouteEVs = 10;
 
-//
-/// setup VLCB - runs once at power on from setup()
-//
-void setupVLCB()
-{
-  VLCB::checkStartupAction(LED_GRN, LED_YLW, SWITCH0);
+// These variables hold details of the currently active entrance button if any. 
+int activeEntranceButtonNumber = 0;
+long timeEntranceButtonPressed;
+byte possibleRoutes[NumExitRouteEVs];
+byte possibleExitButtons[NumExitRouteEVs];
 
-  VLCB::setServices({
-    &mnService, &ledUserInterface, &serialUserInterface, &canService, &nvService,
-    &ecService, &epService, &etService});
-
-  // set config layout parameters
-  VLCB::setNumNodeVariables(10);
-  VLCB::setMaxEvents(32);
-  VLCB::setNumEventVariables(NumRouteEVs + 2);
-
-  // set module parameters
-  VLCB::setVersion(VER_MAJ, VER_MIN, VER_BETA);
-  VLCB::setModuleId(MANUFACTURER, MODULE_ID);
-
-  // set module name
-  VLCB::setName(mname);
-
-  // register our VLCB event handler, to receive event messages of learned events
-  ecService.setEventHandler(eventhandler);
-
-  // configure and start CAN bus and VLCB message processing
-  can2515.setNumBuffers(2, 2);      // more buffers = more memory used, fewer = less
-  can2515.setOscFreq(8000000UL);   // select the crystal frequency of the CAN module
-  can2515.setPins(10, 2);           // select pins for CAN bus CE and interrupt connections
-  if (!can2515.begin())
-  {
-    Serial << F("> error starting VLCB") << endl;
-  }
-
-  // initialise and load configuration
-  VLCB::begin();
-
-  Serial << F("> mode = (") << _HEX(VLCB::getCurrentMode()) << ") " << VLCB::Configuration::modeString(VLCB::getCurrentMode());
-  Serial << F(", CANID = ") << VLCB::getCANID();
-  Serial << F(", NN = ") << VLCB::getNodeNum() << endl;
-
-  // show code version and copyright notice
-  printConfig();
-}
-
-//
-/// setup - runs once at power on
-//
+// setup - runs once at power on
 void setup()
 {
   Serial.begin (115200);
-  Serial << endl << endl << F("> ** CANNX ** ") << __FILE__ << endl;
+  Serial << endl << endl << F("> ** CANNXP ** ") << __FILE__ << endl;
 
   setupVLCB();
 
@@ -127,22 +80,22 @@ void setup()
     VLCB::writeNV(1, 50);
   }
 
+  // show code version and copyright notice
+  printConfig();
+
   // end of setup
   Serial << F("> ready") << endl << endl;
 }
 
-//
-/// loop - runs forever
-//
+
+// loop - runs forever
 void loop()
 {
-  //
-  /// do VLCB message, switch and LED processing
-  //
+  // do VLCB message, switch and LED processing
   VLCB::process();
 
   // Check whether an entrance button needs to be checked for a timeout
-  // We ony need to process the timeout if there is an active entrance button
+  // We only need to process the timeout if there is an active entrance button
   if(activeEntranceButtonNumber > 0)
   {
     int buttonPressInterval = VLCB::readNV(1) * 100;
@@ -159,80 +112,73 @@ void loop()
   // bottom of loop()
 }
 
-bool isSubsequentButtonPress()
+// setup VLCB - runs once at power on from setup()
+void setupVLCB()
 {
-  // Check timer. Is this within the interval from the first button press?
-  int buttonPressInterval = VLCB::readNV(1) * 100;
-  long now = millis();
-  //Serial << F("Checking button sequence: lastTime=") << lastButtonPressTime
-  //  << F(", now=") << now << F(", interval=") << buttonPressInterval << endl;
-  return now < lastButtonPressTime + buttonPressInterval;
+  VLCB::checkStartupAction(LED_GRN, LED_YLW, SWITCH0);
+
+  VLCB::setServices({
+    &mnService, &ledUserInterface, &serialUserInterface, &canService, &nvService,
+    &ecService, &epService, &etService});
+
+  // set config layout parameters
+  VLCB::setNumNodeVariables(10);
+  VLCB::setMaxEvents(32);
+  VLCB::setNumEventVariables((NumExitRouteEVs * 2) + 2);
+
+  // set module parameters
+  VLCB::setVersion(VER_MAJ, VER_MIN, VER_BETA);
+  VLCB::setModuleId(MANUFACTURER, MODULE_ID);
+
+  // set module name
+  VLCB::setName(mname);
+
+  // register our VLCB event handler, to receive event messages of learned events
+  ecService.setEventHandler(eventhandler);
+
+  // configure and start CAN bus and VLCB message processing
+  can2515.setNumBuffers(2, 2);      // more buffers = more memory used, fewer = less
+  can2515.setOscFreq(8000000UL);    // select the crystal frequency of the CAN module
+  can2515.setPins(10, 2);           // select pins for CAN bus CE and interrupt connections
+
+  if (!can2515.begin())
+  {
+    Serial << F("> error starting VLCB") << endl;
+  }
+
+  // initialise and load configuration
+  VLCB::begin();
+
+  Serial << F("> mode = (") << _HEX(VLCB::getCurrentMode()) << ") " << VLCB::Configuration::modeString(VLCB::getCurrentMode());
+  Serial << F(", CANID = ") << VLCB::getCANID();
+  Serial << F(", NN = ") << VLCB::getNodeNum() << endl;
+
 }
 
-void saveLastButtonPressTime()
-{
-  lastButtonPressTime = millis();
-}
-
+// An entrance button has been pressed, so save away the possible exit buttons and consequent routes
 void saveRoutesFromEvent(byte eventIndex)
 {
-  // Save routes for this event for next button press.
-  for (byte i = 0; i < NumRouteEVs; i++)
-  {
-    possibleRoutes[i] = VLCB::getEventEVval(eventIndex, i + 1);
-  }
+   // Save routes for this event for next button press.
+   for (byte i = 0; i < NumExitRouteEVs; i++)
+   {
+     possibleExitButtons[i] = VLCB::getEventEVval(eventIndex, i + FirstExitButtonNumberEV);
+     possibleRoutes[i] = VLCB::getEventEVval(eventIndex, i + FirstRouteNumberEV);
+   }
+
+   // Report the possible buttons and routes
+   for (byte i = 0; i < NumExitRouteEVs; i++)
+   {
+     // Ignore any non-set values
+     if(possibleExitButtons[i] != 0 && possibleExitButtons[i] != 255)
+     {
+       Serial << F("Possible exit button ") << possibleExitButtons[i] << F(" for route ") << possibleRoutes[i] << endl;
+     }
+   }
 }
 
-bool routeIsSaved(byte newRoute)
-{
-  for (byte j = 0; j < NumRouteEVs; j++)
-  {
-    if (possibleRoutes[j] == newRoute)
-    {
-      return true;
-    }
-  }
-  return false;
-}
-
-byte findMatchingRoute(byte eventIndex)
-{
-  // Match route set with previous route set. (Intersection)
-  byte selectedRoute = 0;
-  byte routeCount = 0;
-  for (byte i = 0; i < NumRouteEVs; i++)
-  {
-    byte newRoute = VLCB::getEventEVval(eventIndex, i + 1);
-    //Serial << F("> > checking route ") << newRoute << endl;
-    if (newRoute != 0 && newRoute != 255 && routeIsSaved(newRoute))
-    {
-      //Serial << F("> >   route ") << newRoute << F(" was saved") << endl;
-      ++routeCount;
-      if (selectedRoute == 0)
-      {
-        selectedRoute = newRoute;
-      }
-    }
-  }
-  if (routeCount == 0)
-  {
-    Serial << F("> No possible routes found.") << endl;
-  }
-  else
-  {
-    if (routeCount >= 2)
-    {
-      Serial << F("> Found ") << routeCount << F(" possible routes") << endl; 
-    }
-  }
-  return selectedRoute;
-}
-
-//
-/// user-defined event processing function
-/// called from the VLCB library when a learned event is received
-/// it receives the event table index and the CAN frame
-//
+// user-defined event processing function
+// called from the VLCB library when a learned event is received
+// it receives the event table index and the CAN frame
 void eventhandler(byte eventIndex, const VLCB::VlcbMessage *msg)
 {
   Serial << F("> event handler: index = ") << eventIndex << F(", opcode = 0x") << _HEX(msg->data[0]) << endl;
@@ -241,68 +187,114 @@ void eventhandler(byte eventIndex, const VLCB::VlcbMessage *msg)
   bool ison = (msg->data[0] & 0x01) == 0;
   if (!ison)
   {
-    // Don't react to OFF events. Probably misconfiguration.
+    // Don't react to OFF events. It's probably occuring because of misconfiguration.
     return;
   }
   
-  if (isSubsequentButtonPress())
-  {
-    Serial << F("> is subsequent button press") << endl;
-    // Subsequent button press: Collect possible route set for this button.
-    byte selectedRoute = findMatchingRoute(eventIndex);
-
-    if (selectedRoute > 0)
-    {
-      Serial << F("> Selected route ") << selectedRoute << endl;
-      // Send an event with this node NN and the selectedRoute as EN. Cannot be taught.
-      VLCB::sendMessageWithNN(OPC_ACON, 0, selectedRoute);
-    }
-    else
-    {
-      // The pressed exit button wasn't valid, so we stop the entrance button flashing
-      Serial << F("> No route selected.") << endl;
-      cancelEntranceButton();
-    }
-
-    Serial << F("> Processing of Exit button completed.") << endl;
-  }
-
-  // Don't want to save this here because A-B-C is not a valid button press, the signalman has to go A-B-B-C.
-  //saveRoutesFromEvent(eventIndex);
-  //Serial << F("> saved routes from event for future button press.") << endl;
-  //saveLastButtonPressTime();
-
-  else
-  {
-    // First button pressed, we only want to process it if it is an entrance (or combined) button
-    int buttonType = VLCB::getEventEVval(eventIndex, EntranceFlagEV);
-
-    if(buttonType > 0)
-    {
-
-      // Send an event with this node NN and the Entrance Button Number * 100 as EN. 
-      // Intended to allow the entrance button light to be flashed.
-      activeEntranceButtonNumber = VLCB::getEventEVval(eventIndex, EntranceButtonNumberEV);
-      VLCB::sendMessageWithNN(OPC_ACON, 0, activeEntranceButtonNumber * 100);
-
-      saveRoutesFromEvent(eventIndex);
-      Serial << F("> possible routes from entrance button ") << activeEntranceButtonNumber << F(" saved.") << endl;
-      saveLastButtonPressTime();
-
-      timeEntranceButtonPressed = millis();
-    }
-
-    else
-    {
-      Serial << F("> Not an entrance button - ignored") << endl; 
-    }
-  }
-  
+  // If there is already an entrance button active then we assume we are dealing with an exit,
+  // other wise we are dealing with a new entrance.
+  activeEntranceButtonNumber == 0 ? ProcessEntranceButton(eventIndex) : ProcessExitButton(eventIndex);
 }
 
-//
-/// print code version config details and copyright notice
-//
+void ProcessEntranceButton(byte eventIndex)
+{
+  // Get the button type and the button number
+  int buttonType = GetButtonTypeFromEvent(eventIndex);
+  int buttonNumber = GetButtonNumberFromEvent(eventIndex);
+  
+  // Get out if the button is not valid as an entrance
+  if(buttonType != 1 && buttonType !=2)
+  {
+    Serial << F("> Button ") << buttonNumber << F(" is not an entrance button - ignored") << endl; 
+    return;
+  }
+
+  // Set the two global variables which will keep track of the entrance button
+  activeEntranceButtonNumber = buttonNumber;
+  timeEntranceButtonPressed = millis();
+
+  // Send an event with this node NN and the Entrance Button Number * 100 as EN. 
+  // Intended to allow the entrance button light to be flashed.
+  sendOnEvent(buttonNumber * 100);
+
+  Serial << F("> Button ") << buttonNumber << F(" is active as an entrance button") << endl; 
+
+  // Record the valid exit buttons and routes for this entrance
+  saveRoutesFromEvent(eventIndex);
+}
+
+void ProcessExitButton(byte eventIndex)
+{
+  // Get the button type and the button number
+  int buttonType = GetButtonTypeFromEvent(eventIndex);
+  int buttonNumber = GetButtonNumberFromEvent(eventIndex);
+  
+  // Get out if the button is not valid as an exit
+  if(buttonType != 2 && buttonType !=3)
+  {
+    Serial << F("> Button ") << buttonNumber << F(" is not an exit button - ignored") << endl; 
+    cancelEntranceButton();
+    return;
+  }
+
+  // Get out if the button is not valid as an exit for the currently selected entrance, otherwise
+  // call the requested route.
+  for (byte i = 0; i < NumExitRouteEVs; i++)
+  {
+    if(buttonNumber = possibleExitButtons[i])
+    {
+      // The button has matched, so call the route
+      Serial << F("> Button ") << buttonNumber << F(" is a valid exit, calling route ") << possibleRoutes[i] << endl; 
+      steadyEntranceButton();
+      sendOnEvent(possibleRoutes[i]);
+      return; // Get out if we have called a route
+    }
+  }
+
+  // This code is only reached if the exit button isn't valid for the entrance
+  Serial << F("Button ") << buttonNumber << F(" is not a valid exit for entrance ") << activeEntranceButtonNumber << endl;
+  cancelEntranceButton();
+}
+
+int GetButtonTypeFromEvent(byte eventIndex)
+{
+  int buttonType = VLCB::getEventEVval(eventIndex, ButtonTypeEV);
+  return buttonType;
+}
+
+int GetButtonNumberFromEvent(byte eventIndex)
+{
+  int buttonNumber = VLCB::getEventEVval(eventIndex, ButtonNumberEV);
+  return buttonNumber;
+}
+
+void cancelEntranceButton()
+{
+  sendOffEvent(activeEntranceButtonNumber * 100);
+  Serial << F("> Entrance button ") << activeEntranceButtonNumber << F(" action cancelled.") << endl;
+  activeEntranceButtonNumber = 0;
+}
+
+void steadyEntranceButton()
+{
+  sendOnEvent(activeEntranceButtonNumber * 200);
+  Serial << F("> Entrance button ") << activeEntranceButtonNumber << F(" released after route called.") << endl;
+  activeEntranceButtonNumber = 0;
+}
+
+void sendOnEvent(int eventNumber)
+{
+  unsigned int eventNum = eventNumber;
+  VLCB::sendMessageWithNN(OPC_ACON, highByte(eventNum), lowByte(eventNum));
+}
+
+void sendOffEvent(int eventNumber)
+{
+  unsigned int eventNum = eventNumber;
+  VLCB::sendMessageWithNN(OPC_ACOF, highByte(eventNum), lowByte(eventNum));
+}
+
+// print code version config details and copyright notice
 void printConfig()
 {
   // code version
@@ -310,12 +302,5 @@ void printConfig()
   Serial << F("> compiled on ") << __DATE__ << F(" at ") << __TIME__ << F(", compiler ver = ") << __cplusplus << endl;
 
   // copyright
-  Serial << F("> © Sven Rosvall (MERG 3777) 2026") << endl;
-}
-
-void cancelEntranceButton()
-{
-  VLCB::sendMessageWithNN(OPC_ACOF, 0, activeEntranceButtonNumber * 100);
-  Serial << F("> Entrance button ") << activeEntranceButtonNumber << F(" action cancelled.") << endl;
-  activeEntranceButtonNumber = 0;
+  Serial << F("> © Nick Locke (MERG 3518) 2026") << endl;
 }

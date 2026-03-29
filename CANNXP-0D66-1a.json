@@ -1,9 +1,9 @@
 {
-  "timestamp": "202601122215",
+  "timestamp": "202603281610",
   "moduleName": "CANNX",
   "nodeVariables": [
     {
-      "displayTitle": "Button press interval",
+      "displayTitle": "Entrance button timeOut",
       "type": "NodeVariableSlider",
       "nodeVariableIndex": 1,
       "displayUnits": "seconds",
@@ -12,114 +12,15 @@
   ],
   "eventVariables": [
     {
-      "displayTitle": "1st route",
+      "displayTitle": "Button number",
       "type" : "EventVariableNumber",
       "eventVariableIndex": 1
     },
     {
-      "displayTitle": "2nd route",
-      "type" : "EventVariableNumber",
-      "eventVariableIndex": 2
-    },
-    {
-      "displayTitle": "3rd route",
-      "type" : "EventVariableNumber",
-      "eventVariableIndex": 3
-    },
-    {
-      "displayTitle": "4th route",
-      "type" : "EventVariableNumber",
-      "eventVariableIndex": 4
-    },
-    {
-      "displayTitle": "5th route",
-      "type" : "EventVariableNumber",
-      "eventVariableIndex": 5
-    },
-    {
-      "displayTitle": "6th route",
-      "type" : "EventVariableNumber",
-      "eventVariableIndex": 6
-    },
-    {
-      "displayTitle": "7th route",
-      "type" : "EventVariableNumber",
-      "eventVariableIndex": 7
-    },
-    {
-      "displayTitle": "8th route",
-      "type" : "EventVariableNumber",
-      "eventVariableIndex": 8
-    },
-    {
-      "displayTitle": "9th route",
-      "type" : "EventVariableNumber",
-      "eventVariableIndex": 9
-    },
-    {
-      "displayTitle": "10th route",
-      "type" : "EventVariableNumber",
-      "eventVariableIndex": 10
-    },
-    {
-      "displayTitle": "11th route",
-      "type" : "EventVariableNumber",
-      "eventVariableIndex": 11
-    },
-    {
-      "displayTitle": "12th route",
-      "type" : "EventVariableNumber",
-      "eventVariableIndex": 12
-    },
-    {
-      "displayTitle": "13th route",
-      "type" : "EventVariableNumber",
-      "eventVariableIndex": 13
-    },
-    {
-      "displayTitle": "14th route",
-      "type" : "EventVariableNumber",
-      "eventVariableIndex": 14
-    },
-    {
-      "displayTitle": "15th route",
-      "type" : "EventVariableNumber",
-      "eventVariableIndex": 15
-    },
-    {
-      "displayTitle": "16th route",
-      "type" : "EventVariableNumber",
-      "eventVariableIndex": 16
-    },
-    {
-      "displayTitle": "17th route",
-      "type" : "EventVariableNumber",
-      "eventVariableIndex": 17
-    },
-    {
-      "displayTitle": "18th route",
-      "type" : "EventVariableNumber",
-      "eventVariableIndex": 18
-    },
-    {
-      "displayTitle": "19th route",
-      "type" : "EventVariableNumber",
-      "eventVariableIndex": 19
-    },
-    {
-      "displayTitle": "20th route",
-      "type" : "EventVariableNumber",
-      "eventVariableIndex": 20
-    },
-    {
-      "displayTitle": "Button is entrance",
+      "displayTitle": "Button type",
       "type" : "EventVariableSelect",
-      "eventVariableIndex": 21,
+      "eventVariableIndex": 2,
       "options": [
-        {
-          "value": 0,
-          "label": "Exit only"
-        },
         {
           "value": 1,
           "label": "Entrance only"
@@ -127,13 +28,212 @@
         {
           "value": 2,
           "label": "Entrance and Exit"
+        },
+        {
+          "value": 3,
+          "label": "Exit only"
         }
       ]
     },
     {
-      "displayTitle": "Entrance button number",
-      "type" : "EventVariableNumber",
-      "eventVariableIndex": 22
+      "displayTitle": "1st route",
+      "type" : "EventVariableGroup",
+      "visibilityLogic": 
+      {
+        "JLL":{"<":[{"EV":[2]}, 3]}
+      },
+      "groupItems": [
+        {
+          "displayTitle": "Exit button",
+          "type" : "EventVariableNumber",
+          "eventVariableIndex": 3
+        },
+        {
+          "displayTitle": "Route number",
+          "type" : "EventVariableNumber",
+          "eventVariableIndex": 13
+        }
+      ]
+    },
+    {
+      "displayTitle": "2nd route",
+      "type" : "EventVariableGroup",
+      "visibilityLogic": 
+      {
+        "JLL":{"<":[{"EV":[2]}, 3]}
+      },
+      "groupItems": [
+        {
+          "displayTitle": "Exit button",
+          "type" : "EventVariableNumber",
+          "eventVariableIndex": 4
+        },
+        {
+          "displayTitle": "Route number",
+          "type" : "EventVariableNumber",
+          "eventVariableIndex": 14
+        }
+      ]
+    },
+    {
+      "displayTitle": "3rd route",
+      "type" : "EventVariableGroup",
+      "visibilityLogic": 
+      {
+        "JLL":{"<":[{"EV":[2]}, 3]}
+      },
+      "groupItems": [
+        {
+          "displayTitle": "Exit button",
+          "type" : "EventVariableNumber",
+          "eventVariableIndex": 5
+        },
+        {
+          "displayTitle": "Route number",
+          "type" : "EventVariableNumber",
+          "eventVariableIndex": 15
+        }
+      ]
+    },
+    {
+      "displayTitle": "4th route",
+      "type" : "EventVariableGroup",
+      "visibilityLogic": 
+      {
+        "JLL":{"<":[{"EV":[2]}, 3]}
+      },
+      "groupItems": [
+        {
+          "displayTitle": "Exit button",
+          "type" : "EventVariableNumber",
+          "eventVariableIndex": 6
+        },
+        {
+          "displayTitle": "Route number",
+          "type" : "EventVariableNumber",
+          "eventVariableIndex": 16
+        }
+      ]
+    },
+    {
+      "displayTitle": "5th route",
+      "type" : "EventVariableGroup",
+      "visibilityLogic": 
+      {
+        "JLL":{"<":[{"EV":[2]}, 3]}
+      },
+      "groupItems": [
+        {
+          "displayTitle": "Exit button",
+          "type" : "EventVariableNumber",
+          "eventVariableIndex": 7
+        },
+        {
+          "displayTitle": "Route number",
+          "type" : "EventVariableNumber",
+          "eventVariableIndex": 17
+        }
+      ]
+    },
+    {
+      "displayTitle": "6th route",
+      "type" : "EventVariableGroup",
+      "visibilityLogic": 
+      {
+        "JLL":{"<":[{"EV":[2]}, 3]}
+      },
+      "groupItems": [
+        {
+          "displayTitle": "Exit button",
+          "type" : "EventVariableNumber",
+          "eventVariableIndex": 8
+        },
+        {
+          "displayTitle": "Route number",
+          "type" : "EventVariableNumber",
+          "eventVariableIndex": 18
+        }
+      ]
+    },
+    {
+      "displayTitle": "7th route",
+      "type" : "EventVariableGroup",
+      "visibilityLogic": 
+      {
+        "JLL":{"<":[{"EV":[2]}, 3]}
+      },
+      "groupItems": [
+        {
+          "displayTitle": "Exit button",
+          "type" : "EventVariableNumber",
+          "eventVariableIndex": 9
+        },
+        {
+          "displayTitle": "Route number",
+          "type" : "EventVariableNumber",
+          "eventVariableIndex": 19
+        }
+      ]
+    },
+    {
+      "displayTitle": "8th route",
+      "type" : "EventVariableGroup",
+      "visibilityLogic": 
+      {
+        "JLL":{"<":[{"EV":[2]}, 3]}
+      },
+      "groupItems": [
+        {
+          "displayTitle": "Exit button",
+          "type" : "EventVariableNumber",
+          "eventVariableIndex": 10
+        },
+        {
+          "displayTitle": "Route number",
+          "type" : "EventVariableNumber",
+          "eventVariableIndex": 20
+        }
+      ]
+    },
+    {
+      "displayTitle": "9th route",
+      "type" : "EventVariableGroup",
+      "visibilityLogic": 
+      {
+        "JLL":{"<":[{"EV":[2]}, 3]}
+      },
+      "groupItems": [
+        {
+          "displayTitle": "Exit button",
+          "type" : "EventVariableNumber",
+          "eventVariableIndex": 11
+        },
+        {
+          "displayTitle": "Route number",
+          "type" : "EventVariableNumber",
+          "eventVariableIndex": 21
+        }
+      ]
+    },
+    {
+      "displayTitle": "10th route",
+      "type" : "EventVariableGroup",
+      "visibilityLogic": 
+      {
+        "JLL":{"<":[{"EV":[2]}, 3]}
+      },
+      "groupItems": [
+        {
+          "displayTitle": "Exit button",
+          "type" : "EventVariableNumber",
+          "eventVariableIndex": 12
+        },
+        {
+          "displayTitle": "Route number",
+          "type" : "EventVariableNumber",
+          "eventVariableIndex": 22
+        }
+      ]
     }
   ]
 }
