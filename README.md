@@ -32,14 +32,14 @@ This is significantly more complicated than the arrangement used in CANNX, but i
 - does not assume that all routes are reversible.
 - forces sequential routes to be set using for example buttons A-B-B-C (whilst A-B-C is appropriate for a model railway, it is not prototypical for a UK NX panel).
 
-The CANNXP produces certain events as part of its processing, with the event numbers being as follows:
+The CANNXP produces certain events as part of its processing, with the event numbers being as follows (Opcode / High Byte / Low Byte):
 
-- ACON / Entrance Button Number * 100 - produced when a valid entrance button is pressed. Used to start the entrance button flashing.
-- ACON / Route Number - produced when a route from an entrance to an exit button has been called successfully. Used to start the route setting process.
-- ACON / Entrance Button Number * 200 - produced when a route from an entrance to an exit button has been called successfully. Used to light the entrance button steadily.
-- ACOF / Entrance Button Number * 100 - produced when an entrance button times out, or an invalid exit button is selected. Used to stop the entrance button flashing.
+- ACON / 1 / Entrance Button Number - produced when a valid entrance button is pressed. Used to start the entrance button flashing.
+- ACON / 0 / Route Number - produced when a route from an entrance to an exit button has been called successfully. Used to start the route setting process.
+- ACON / 2 / Entrance Button Number - produced when a route from an entrance to an exit button has been called successfully. Used to light the entrance button steadily.
+- ACOF / 1 / Entrance Button Number - produced when an entrance button times out, or an invalid exit button is selected. Used to stop the entrance button flashing.
 
-The multiplication by100 and 200 is intended to ensure that there is no conflict between the event numbers. Consideration is being given to using Bob Vetterlein's suggestion of using the high byte to create the range of events. That would imply zero for the route number, then 1 and 2 for the buttons.
+Bob Vetterlein's suggestion of using the high byte to create the range of events has been taken on board.
 
 ## Node Variables
 

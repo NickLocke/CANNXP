@@ -60,6 +60,11 @@ const int FirstExitButtonNumberEV = 3;
 const int FirstRouteNumberEV = 13;
 const int NumExitRouteEVs = 10;
 
+// Produced event groupings (the high byte of the event number)
+const int PRODUCED_EVENT_CALL_ROUTE = 0;
+const int PRODUCED_EVENT_FLASH_LIGHT = 1;
+const int PRODUCED_EVENT_STEADY_LIGHT = 2;
+
 // These variables hold details of the currently active entrance button if any. 
 int activeEntranceButtonNumber = 0;
 long timeEntranceButtonPressed;
@@ -215,7 +220,7 @@ void ProcessEntranceButton(byte eventIndex)
 
   // Send an event with this node NN and the Entrance Button Number * 100 as EN. 
   // Intended to allow the entrance button light to be flashed.
-  sendOnEvent(buttonNumber * 100);
+  sendOnEvent(PRODUCED_EVENT_FLASH_LIGHT, buttonNumber);
 
   Serial << F("> Button ") << buttonNumber << F(" is active as an entrance button") << endl; 
 
@@ -246,7 +251,7 @@ void ProcessExitButton(byte eventIndex)
       // The button has matched, so call the route
       Serial << F("> Button ") << buttonNumber << F(" is a valid exit, calling route ") << possibleRoutes[i] << endl; 
       steadyEntranceButton();
-      sendOnEvent(possibleRoutes[i]);
+      sendOnEvent(PRODUCED_EVENT_CALL_ROUTE, possibleRoutes[i]);
       return; // Get out if we have called a route
     }
   }
@@ -270,28 +275,28 @@ int GetButtonNumberFromEvent(byte eventIndex)
 
 void cancelEntranceButton()
 {
-  sendOffEvent(activeEntranceButtonNumber * 100);
+  sendOffEvent(PRODUCED_EVENT_FLASH_LIGHT, activeEntranceButtonNumber);
   Serial << F("> Entrance button ") << activeEntranceButtonNumber << F(" action cancelled.") << endl;
   activeEntranceButtonNumber = 0;
 }
 
 void steadyEntranceButton()
 {
-  sendOnEvent(activeEntranceButtonNumber * 200);
+  sendOnEvent(PRODUCED_EVENT_STEADY_LIGHT, activeEntranceButtonNumber);
   Serial << F("> Entrance button ") << activeEntranceButtonNumber << F(" released after route called.") << endl;
   activeEntranceButtonNumber = 0;
 }
 
-void sendOnEvent(int eventNumber)
+void sendOnEvent(int eventType, int eventNumber)
 {
   unsigned int eventNum = eventNumber;
-  VLCB::sendMessageWithNN(OPC_ACON, highByte(eventNum), lowByte(eventNum));
+  VLCB::sendMessageWithNN(OPC_ACON, eventType, eventNumber);
 }
 
-void sendOffEvent(int eventNumber)
+void sendOffEvent(int eventType, int eventNumber)
 {
   unsigned int eventNum = eventNumber;
-  VLCB::sendMessageWithNN(OPC_ACOF, highByte(eventNum), lowByte(eventNum));
+  VLCB::sendMessageWithNN(OPC_ACOF, eventType, eventNumber);
 }
 
 // print code version config details and copyright notice
