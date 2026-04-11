@@ -218,11 +218,7 @@ void ProcessEntranceButton(byte eventIndex)
   activeEntranceButtonNumber = buttonNumber;
   timeEntranceButtonPressed = millis();
 
-  // Send an event with this node NN and the Entrance Button Number * 100 as EN. 
-  // Intended to allow the entrance button light to be flashed.
-  sendOnEvent(PRODUCED_EVENT_FLASH_LIGHT, buttonNumber);
-
-  Serial << F("> Button ") << buttonNumber << F(" is active as an entrance button") << endl; 
+  flashEntranceButton();
 
   // Record the valid exit buttons and routes for this entrance
   saveRoutesFromEvent(eventIndex);
@@ -246,7 +242,7 @@ void ProcessExitButton(byte eventIndex)
   // call the requested route.
   for (byte i = 0; i < NumExitRouteEVs; i++)
   {
-    if(buttonNumber = possibleExitButtons[i])
+    if(buttonNumber == possibleExitButtons[i])
     {
       // The button has matched, so call the route
       Serial << F("> Button ") << buttonNumber << F(" is a valid exit, calling route ") << possibleRoutes[i] << endl; 
@@ -277,6 +273,13 @@ void cancelEntranceButton()
 {
   sendOffEvent(PRODUCED_EVENT_FLASH_LIGHT, activeEntranceButtonNumber);
   Serial << F("> Entrance button ") << activeEntranceButtonNumber << F(" action cancelled.") << endl;
+  activeEntranceButtonNumber = 0;
+}
+
+void flashEntranceButton()
+{
+  sendOnEvent(PRODUCED_EVENT_FLASH_LIGHT, activeEntranceButtonNumber);
+  Serial << F("> Entrance button ") << activeEntranceButtonNumber << F(" start of route calling process.") << endl;
   activeEntranceButtonNumber = 0;
 }
 

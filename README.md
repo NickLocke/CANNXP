@@ -10,7 +10,7 @@ in the MERG Knowledgebase.
 
 A route is set between an entrance button and an exit button. Each button can be valid as an entrance, exit or both. The first button to be pressed should be an entrance button and the second button an exit which makes logical sense as a route from the entrance. When an entrance button is pressed, it will start to flash. If no exit button is pressed within a certain time (typically five seconds), the process is cancelled and the flashing stops. If a button is pressed, but it is not a valid exit for the selected entrance then the processing is cancelled and the flashing stops. If a valid exit button is pressed, the entrance button light will become steady and the route will be "called".
 
-Note that on larger panels, there is the concept of a "flasher ring" which groups the entrance buttons so that multiple signalmen can set multiple routes simultaneously. That concept is nto supported here - only a single entrance button can be active at any one time.
+Note that on larger panels, there is the concept of a "flasher ring" which groups the entrance buttons so that multiple signalmen can set multiple routes simultaneously. That concept is not supported here - only a single entrance button can be active at any one time.
 
 Due note has been taken of Sven's point about ensuring that a module only does one thing, and does it well. Accordingly, functionality which is part of the route "calling" process has been included here. However functionality beyond that such as route "setting" and "clearing" has not been included and will ultimately be handled elsewhere.
 
@@ -52,8 +52,7 @@ The time in seconds that the CANNXP will wait for an exit button to be pressed a
 ### EV1 - Button Number 
 
 All buttons involved with route setting are allocated a unique number. Routes are then defined as going between two buttons (a button capable of acting 
-as an Entrance and a button capable of acting as an exit). The number is abitrary, cannot be zero, and should not exceed approximately 620 because it is 
-multiplied by 200 when creating certain produced events and events cannot be numbered higher than 65535.
+as an Entrance and a button capable of acting as an exit). The number is abitrary and cannot be zero.
 
 ### EV2 - Button Type
 
